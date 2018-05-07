@@ -1,0 +1,46 @@
+{
+  "name": "react-redux-helper",
+  "version": "1.0.0",
+  "description": "react react-redux redux redux-saga",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paul-Long/react-redux-helper.git"
+  },
+  "keywords": [
+    "redux",
+    "react-redux",
+    "redux-saga"
+  ],
+  "author": "paul",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Paul-Long/react-redux-helper/issues"
+  },
+  "homepage": "https://github.com/Paul-Long/react-redux-helper#readme",
+  "dependencies": {
+    "immutable": "^3.8.2",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.0",
+    "redux-saga": "^0.16.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "invariant": "^2.2.4"
+  }
+}
