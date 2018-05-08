@@ -1,21 +1,17 @@
 import createSagaMiddleware from 'redux-saga';
 import createStore from './createStore';
 import reducerBuilder from './reducerBuilder';
+import {
+  run as runSubscription
+} from './subscription';
 
-const helpModel = {
-  namespace: '',
-  action: '',
-  state: 0,
-  effect: () => null,
-  reducer: (state) => state + 1
-};
-
-export function create(hooksAndOpts = {}, createOpts = {}) {
-
+export function create(hooksAndOpts = {}) {
   const app = {
     _models: [],
     model,
-    start
+    models,
+    start,
+    reducerMiddleware,
   };
 
   return app;
@@ -24,12 +20,31 @@ export function create(hooksAndOpts = {}, createOpts = {}) {
     app._models.push(model);
   }
 
+  function models(models) {
+    app._models = [...app._models, ...models];
+  }
+
+  function reducerMiddleware(middleware) {
+    app._reducerMiddleware = middleware;
+  }
+
   function start() {
     const sagaMiddleware = createSagaMiddleware();
     const store = createStore({
-      reducers: reducerBuilder()
+      reducers: reducerBuilder({
+        models: app._models,
+        reducerMiddleware: app._reducerMiddleware,
+      }),
+      initialState: hooksAndOpts.initialState || {},
+      sagaMiddleware,
     });
     store.runSaga = sagaMiddleware.run;
     app._store = store;
+
+    for (const model of this._models) {
+      if (model.subscriptions) {
+        runSubscription(model.subscriptions, model, app, () => null);
+      }
+    }
   }
 }
