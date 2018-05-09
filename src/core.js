@@ -2,10 +2,11 @@ import createSagaMiddleware from 'redux-saga';
 import createStore from './createStore';
 import reducerBuilder from './reducerBuilder';
 import {
-  run as runSubscription
+  run as runSubscription,
 } from './subscription';
 
-export function create(hooksAndOpts = {}) {
+export function create(hooksAndOpts = {}, createOpts = {}) {
+  const { setupApp } = createOpts;
   const app = {
     _models: [],
     model,
@@ -41,9 +42,13 @@ export function create(hooksAndOpts = {}) {
     store.runSaga = sagaMiddleware.run;
     app._store = store;
 
+    setupApp(app);
+
     for (const model of this._models) {
-      if (model.subscriptions) {
-        runSubscription(model.subscriptions, model, app, () => null);
+      for (const m of model) {
+        if (m.subscriptions) {
+          runSubscription(m.subscriptions, m, app, () => null);
+        }
       }
     }
   }

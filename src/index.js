@@ -2,11 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import invariant from 'invariant';
+import createHashHistory from 'history/createHashHistory';
 import * as core from './core';
 import { isFunction, isString, isHTMLElement } from './utils';
 
 export default function (opts = {}) {
-  const createOpts = {};
+  const history = opts.history || createHashHistory();
+  const createOpts = {
+    setupApp(app) {
+      app._history = patchHistory(history);
+    },
+  };
   const app = core.create(opts, createOpts);
   const oldAppStart = app.start;
   app.router = router;
@@ -64,4 +70,13 @@ function getProvider(store, app, router) {
 
 function render(container, store, app, router) {
   ReactDOM.render(getProvider(store, app, router), container);
+}
+
+function patchHistory(history) {
+  const oldListen = history.listen;
+  history.listen = (callback) => {
+    callback(history.location);
+    return oldListen.call(history, callback);
+  };
+  return history;
 }

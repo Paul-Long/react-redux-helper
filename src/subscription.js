@@ -7,12 +7,12 @@ export function run(subs, model, app, onError) {
   for (const key in subs) {
     if (Object.prototype.hasOwnProperty.call(subs, key)) {
       const sub = subs[key];
-      const unlistener = sub({
+      const unListener = sub({
         dispatch: prefixedDispatch(app._store.dispatch, model),
-        history: app._history
+        history: app._history,
       }, onError);
-      if (isFunction(unlistener)) {
-        funcs.push(unlistener);
+      if (isFunction(unListener)) {
+        funcs.push(unListener);
       } else {
         nonFuncs.push(key);
       }
