@@ -58,11 +58,11 @@ function initial(group, reducerMiddleware) {
       overrideState(initialState, subKeys, value);
     }
     if (isFunction(reducer)) {
-      handlers[namespace] = reducerHandler(model, reducer);
+      handlers[namespace] = reducerHandler(model, reducer, reducerMiddleware);
     } else {
       for (const key in reducer) {
         if (Object.prototype.hasOwnProperty.call(reducer, key)) {
-          handlers[`${namespace}.${key}`] = reducerHandler(model, reducer[key]);
+          handlers[`${namespace}.${key}`] = reducerHandler(model, reducer[key], reducerMiddleware);
         }
       }
     }
@@ -86,7 +86,7 @@ function overrideState(state, keys, value = {}) {
   }
 }
 
-function createReducer(initialState, handlers, reducerMiddleware) {
+function createReducer(initialState, handlers) {
   invariant(
     !(typeof initialState === 'undefined' || initialState === null),
     'Initial state is required',
@@ -95,18 +95,19 @@ function createReducer(initialState, handlers, reducerMiddleware) {
     if (!action || !action.type) {
       return state;
     }
-    reducerMiddleware(state, action);
     const handler = handlers[action.type];
     return handler ? handler(state, action) : state;
   };
 }
 
-function reducerHandler(model, handler) {
+function reducerHandler(model, handler, reducerMiddleware) {
   return (state, action) => {
+    if (typeof reducerMiddleware === 'function') {
+      state = reducerMiddleware(state, action) || state;
+    }
     if (model.single) {
       state = handler(state, action);
     } else {
-      state = { ...state };
       overrideState(state, model.subKeys, handler(state, action));
     }
     return state;
