@@ -21,16 +21,18 @@ export default function sagaBuilder(opts: BuilderOpts) {
       }
     }
   }
+  console.log(sagas);
   return sagas;
 }
 
 function createSaga(effects, model) {
   return function* () {
+    console.log(effects);
     for (const key in effects) {
       if (Object.prototype.hasOwnProperty.call(effects, key)) {
         const watcher = getWatcher({
           key,
-          effects: effects[key],
+          _effects: effects[key],
           model,
           onEffect: [],
         });
@@ -45,12 +47,12 @@ function createSaga(effects, model) {
 }
 
 
-function getWatcher({ key, _effect, model, onEffect }) {
-  let effect = _effect;
+function getWatcher({ key, _effects, model, onEffect }) {
+  let effect = _effects;
   let type = 'takeEvery';
   let ms;
-  if (Array.isArray(_effect)) {
-    const [e, opts] = _effect;
+  if (Array.isArray(_effects)) {
+    const [e, opts] = _effects;
     effect = e;
     const t = opts.type;
     const m = opts.ms;
@@ -71,6 +73,7 @@ function getWatcher({ key, _effect, model, onEffect }) {
   }
 
   function* sagaWithCatch(...arg) {
+    console.log(arg);
     try {
       yield effect(...arg);
     } catch (err) {
@@ -80,7 +83,7 @@ function getWatcher({ key, _effect, model, onEffect }) {
 
   const sagaWithOnEffect = applyOnEffect({ onEffect, sagaWithCatch, model, key });
 
-  const action = prefixType(key, model);
+  const action = `${model.namespace}${NAMESPACE_SEP}${key}`;
 
   switch (type) {
     case 'watcher':
