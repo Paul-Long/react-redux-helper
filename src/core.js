@@ -1,6 +1,7 @@
 import createSagaMiddleware from 'redux-saga';
 import createStore from './createStore';
 import reducerBuilder from './reducerBuilder';
+import sagaBuilder from './sagaBuilder';
 import {
   run as runSubscription,
 } from './subscription';
@@ -31,6 +32,7 @@ export function create(hooksAndOpts = {}, createOpts = {}) {
 
   function start() {
     const sagaMiddleware = createSagaMiddleware();
+    const sagas = sagaBuilder({ models: app._models });
     const store = createStore({
       reducers: reducerBuilder({
         models: app._models,
@@ -42,6 +44,7 @@ export function create(hooksAndOpts = {}, createOpts = {}) {
     store.runSaga = sagaMiddleware.run;
     app._store = store;
 
+    sagas.forEach(sagaMiddleware.run);
     setupApp(app);
 
     for (const model of this._models) {
