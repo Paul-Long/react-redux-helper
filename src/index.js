@@ -3,17 +3,21 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import invariant from 'invariant';
 import createHashHistory from 'history/createHashHistory';
-import * as core from './core';
+import create from './core';
 import { isFunction, isString, isHTMLElement } from './utils';
 
 export default function (opts = {}) {
+  const { onError, onEffect, onReducer } = opts;
   const history = opts.history || createHashHistory();
   const createOpts = {
     setupApp(app) {
       app._history = patchHistory(history);
     },
+    onError,
+    onEffect,
+    onReducer,
   };
-  const app = core.create(opts, createOpts);
+  const app = create(opts, createOpts);
   const oldAppStart = app.start;
   app.router = router;
   app.start = start;

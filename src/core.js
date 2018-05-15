@@ -5,9 +5,10 @@ import sagaBuilder from './sagaBuilder';
 import {
   run as runSubscription,
 } from './subscription';
+import { onError as errorHelper } from './utils';
 
-export function create(hooksAndOpts = {}, createOpts = {}) {
-  const { setupApp } = createOpts;
+export default function create(hooksAndOpts = {}, createOpts = {}) {
+  const { setupApp, onError: onErr, onEffect, onReducer } = createOpts;
   const app = {
     _models: [],
     model,
@@ -32,17 +33,19 @@ export function create(hooksAndOpts = {}, createOpts = {}) {
 
   function start() {
     const sagaMiddleware = createSagaMiddleware();
-    const sagas = sagaBuilder({ models: app._models });
     const store = createStore({
       reducers: reducerBuilder({
         models: app._models,
-        reducerMiddleware: app._reducerMiddleware,
+        onReducer,
       }),
       initialState: hooksAndOpts.initialState || {},
       sagaMiddleware,
     });
-    store.runSaga = sagaMiddleware.run;
     app._store = store;
+
+    store.runSaga = sagaMiddleware.run;
+    const onError = errorHelper(app, onErr);
+    const sagas = sagaBuilder({ models: app._models, onError, onEffect });
 
     sagas.forEach(sagaMiddleware.run);
     setupApp(app);

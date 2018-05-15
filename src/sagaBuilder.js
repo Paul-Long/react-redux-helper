@@ -6,35 +6,35 @@ import {
   throttleHelper as throttle,
 } from 'redux-saga/lib/internal/sagaHelpers';
 import { NAMESPACE_SEP } from './constants';
-import prefixType from './prefixType';
 
 type BuilderOpts = {
-  models: Array
+  models: Array,
+  onError: Function,
+  onEffect: Function
 };
 export default function sagaBuilder(opts: BuilderOpts) {
-  const { models } = opts;
+  const { models, onError, onEffect } = opts;
   const sagas = [];
   for (const model of models) {
     for (const m of model) {
       if (m.effects) {
-        sagas.push(createSaga(m.effects, m));
+        sagas.push(createSaga(m.effects, m, onError, onEffect));
       }
     }
   }
-  console.log(sagas);
   return sagas;
 }
 
-function createSaga(effects, model) {
+function createSaga(effects, model, onError, onEffect) {
   return function* () {
-    console.log(effects);
     for (const key in effects) {
       if (Object.prototype.hasOwnProperty.call(effects, key)) {
         const watcher = getWatcher({
           key,
           _effects: effects[key],
           model,
-          onEffect: [],
+          onEffect,
+          onError,
         });
         const task = yield sagaEffects.fork(watcher);
         yield sagaEffects.fork(function* () {
@@ -47,7 +47,7 @@ function createSaga(effects, model) {
 }
 
 
-function getWatcher({ key, _effects, model, onEffect }) {
+function getWatcher({ key, _effects, model, onEffect, onError }) {
   let effect = _effects;
   let type = 'takeEvery';
   let ms;
@@ -73,11 +73,10 @@ function getWatcher({ key, _effects, model, onEffect }) {
   }
 
   function* sagaWithCatch(...arg) {
-    console.log(arg);
     try {
       yield effect(...arg);
     } catch (err) {
-      throw Error(err);
+      onError(err);
     }
   }
 
@@ -104,8 +103,8 @@ function getWatcher({ key, _effects, model, onEffect }) {
 }
 
 function applyOnEffect({ onEffect, sagaWithCatch, model, key }) {
-  for (const fn of onEffect) {
-    sagaWithCatch = fn(sagaWithCatch, sagaEffects, model, key);
+  if (typeof onEffect === 'function') {
+    sagaWithCatch = onEffect(sagaWithCatch, sagaEffects, model, key);
   }
   return sagaWithCatch;
 }

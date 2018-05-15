@@ -4,10 +4,10 @@ import { isArray, isFunction } from './utils';
 
 type Opts = {
   models: Array,
-  reducerMiddleware: Function
+  onReducer: Function
 }
 export default function (opts: Opts) {
-  const { models, reducerMiddleware } = opts;
+  const { models, onReducer } = opts;
   const groups = new Map();
   for (const model of models) {
     invariant(
@@ -18,7 +18,7 @@ export default function (opts: Opts) {
   }
   const reducers = {};
   for (const [key, reducerGroup] of groups.entries()) {
-    reducers[key] = initial(reducerGroup, reducerMiddleware);
+    reducers[key] = initial(reducerGroup, onReducer);
   }
   return combineReducers(reducers);
 }
@@ -46,7 +46,7 @@ function collect(groups, reducers) {
   }
 }
 
-function initial(group, reducerMiddleware) {
+function initial(group, onReducer) {
   const handlers = {};
   let initialState = {};
   for (const model of group.values()) {
@@ -58,16 +58,16 @@ function initial(group, reducerMiddleware) {
       overrideState(initialState, subKeys, value);
     }
     if (isFunction(reducer)) {
-      handlers[namespace] = reducerHandler(model, reducer, reducerMiddleware);
+      handlers[namespace] = reducerHandler(model, reducer, onReducer);
     } else {
       for (const key in reducer) {
         if (Object.prototype.hasOwnProperty.call(reducer, key)) {
-          handlers[`${namespace}.${key}`] = reducerHandler(model, reducer[key], reducerMiddleware);
+          handlers[`${namespace}.${key}`] = reducerHandler(model, reducer[key], onReducer);
         }
       }
     }
   }
-  return createReducer(initialState, handlers, reducerMiddleware);
+  return createReducer(initialState, handlers);
 }
 
 function overrideState(state, keys, value = {}) {
@@ -100,10 +100,10 @@ function createReducer(initialState, handlers) {
   };
 }
 
-function reducerHandler(model, handler, reducerMiddleware) {
+function reducerHandler(model, handler, onReducer) {
   return (state, action) => {
-    if (typeof reducerMiddleware === 'function') {
-      state = reducerMiddleware(state, action) || state;
+    if (typeof onReducer === 'function') {
+      state = onReducer(state, action) || state;
     }
     if (model.single) {
       state = handler(state, action);
