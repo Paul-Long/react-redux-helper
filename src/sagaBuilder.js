@@ -72,9 +72,9 @@ function getWatcher({ key, _effects, model, onEffect, onError }) {
     );
   }
 
-  function* sagaWithCatch(...arg) {
+  function* sagaWithCatch(action) {
     try {
-      yield effect(...arg, sagaEffects);
+      yield effect(action, sagaEffects);
     } catch (err) {
       onError(err);
     }
