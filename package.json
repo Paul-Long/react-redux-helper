@@ -1,6 +1,6 @@
 {
   "name": "react-redux-helper",
-  "version": "1.0.18",
+  "version": "1.0.20",
   "description": "react react-redux redux redux-saga",
   "main": "dist/index.js",
   "scripts": {
